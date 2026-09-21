@@ -8,6 +8,27 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Print greeting
-        run: |
-        echo "Hello, World!"
-        echo "This is a greeting from the GitHub Actions workflow."
+        run:  echo "Hello, World!"
+        -name: Inastall Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          -name: Install dependencies
+        run: npm ci
+        name: Run tests
+        run: npm test
+        deploy:
+          runs-on: ubuntu-latest
+          steps:
+            - name: get the code
+              uses: actions/checkout@v2
+              -name: Inastall Node 20
+              uses: actions/setup-node@v4
+              with:
+                node-version: 20
+             -name: Install dependencies
+              run: npm ci
+              -name: Build the project
+              run: npm run build
+              -name: Deploy to server
+              run: echo "Deploying to server..."
