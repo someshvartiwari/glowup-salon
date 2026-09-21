@@ -8,6 +8,5 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Print greeting
-        run: |
-        echo "Hello, World!"
-        echo "This is a greeting from the GitHub Actions workflow."
+        run: echo "Hello, World!"
+      
