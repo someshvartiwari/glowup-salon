@@ -3,13 +3,33 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Test PowerShell
-        run: echo "Hello from my Windows PC"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Greeting
+        shell: cmd
+        run: echo Hello, World!
+
+      - name: Install dependencies
+        shell: cmd
+        run: npm ci
+
+      - name: Run tests
+        shell: cmd
+        run: npm test
 
   deploy:
     needs: test
     runs-on: self-hosted
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build
+        shell: cmd
+        run: npm run build
+
       - name: Deploy
-        run: echo "Deploying from my Windows PC"
+        shell: cmd
+        run: echo Deploying...
