@@ -1,0 +1,94 @@
+name: CI Pipeline Demo
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+
+  build-job:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install dependencies
+        shell: cmd
+        run: npm ci
+
+      - name: Build project
+        shell: cmd
+        run: npm run build
+
+      - name: Move node_modules to dist
+        shell: cmd
+        run: move node_modules dist
+
+      - name: Copy package.json
+        shell: cmd
+        run: copy package.json dist\
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: dist
+
+
+  test-job:
+    runs-on: self-hosted
+    needs: build-job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        shell: cmd
+        run: npm ci
+
+      - name: Run tests
+        shell: cmd
+        run: npm test
+
+      - name: Upload test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: coverage
+
+
+  lint-job:
+    runs-on: self-hosted
+    needs: test-job
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        shell: cmd
+        run: npm ci
+
+      - name: Run lint
+        shell: cmd
+        run: npm run lint
+
+
