@@ -10,41 +10,41 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code        # download the source code of the repository
-        uses: actions/checkout@v4  #action that checks out your repository so your workflow can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js        # setup Node.js environment
-        uses: actions/setup-node@v4 #action that sets up the Node.js environment
-        with:                     # specify the Node.js version and cache settings
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
           node-version: 20
-          cache: npm              # enable caching for npm dependencies 
+          cache: npm
 
-      - name: Install dependencies  # install project dependencies using npm
-        shell: cmd                  # specify the shell to use
-        run: npm ci                 # run npm install command clean install mode
+      - name: Install dependencies
+        shell: cmd
+        run: npm ci
 
       - name: Build project
-        shell: cmd                 
-        run: npm run build       # run the build script defined in package.json to compile the project
-
-      - name: Move node_modules to dist  # move the node_modules directory to the dist folder to include dependencies in the build artifacts
         shell: cmd
-        run: move node_modules dist       # move node_modules directory to dist folder
+        run: npm run build
 
-      - name: Copy package.json         
+      - name: Move node_modules to dist
+        shell: cmd
+        run: move node_modules dist
+
+      - name: Copy package.json
         shell: cmd
         run: copy package.json dist\
 
-      - name: Upload build artifacts  # upload the build artifacts to GitHub Actions for later use
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: dist
 
 
-  test-job: # job to run tests
+  test-job:
     runs-on: self-hosted
-    needs: build-job # depend on the build job
+    needs: build-job
 
     steps:
       - name: Checkout code
@@ -63,35 +63,37 @@ jobs:
         shell: cmd
         run: npm test
 
-      - name: Upload test coverage  # upload the test coverage report to GitHub Actions for later use
+      - name: Upload test coverage
         uses: actions/upload-artifact@v4
         with:
           name: test-coverage
           path: coverage
+
+
   lint:
-  runs-on: self-hosted
-  needs: build-job
+    runs-on: self-hosted
+    needs: build-job
 
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
-    - name: Install dependencies
-      shell: cmd
-      run: npm ci
+      - name: Install dependencies
+        shell: cmd
+        run: npm ci
 
-    - name: Run linting
-      shell: cmd
-      run: npm run lint:report
+      - name: Run linting
+        shell: cmd
+        run: npm run lint:report
 
-    - name: Upload linting report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-      name: lint-report
-      path: eslint-report.json
+      - name: Upload linting report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lint-report
+          path: eslint-report.json
