@@ -9,7 +9,8 @@
   "build": "vite build",
   "preview": "vite preview",
   "test": "echo \"No tests configured\" && exit 0",
-  "lint": "eslint ."
+  "lint": "eslint .",
+  "lint:report": "eslint . --format json --output-file eslint-report.json"
 },
   "dependencies": {
     "react": "^19.2.0",

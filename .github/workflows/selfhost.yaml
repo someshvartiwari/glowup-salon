@@ -87,11 +87,11 @@ jobs:
 
     - name: Run linting
       shell: cmd
-      run: npm run lint -- --format json --output-file eslint-report.json
+      run: npm run lint:report
 
     - name: Upload linting report
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: lint-report
-        path: eslint-report.json
+      name: lint-report
+      path: eslint-report.json
