@@ -6,6 +6,9 @@ on:
 
 jobs:
 
+  # =========================
+  # BUILD JOB
+  # =========================
   build-job:
     runs-on: self-hosted
 
@@ -42,6 +45,9 @@ jobs:
           path: dist
 
 
+  # =========================
+  # TEST JOB
+  # =========================
   test-job:
     runs-on: self-hosted
     needs: build-job
@@ -70,6 +76,9 @@ jobs:
           path: coverage
 
 
+  # =========================
+  # LINT JOB
+  # =========================
   lint:
     runs-on: self-hosted
     needs: build-job
@@ -90,10 +99,37 @@ jobs:
       - name: Run linting
         shell: cmd
         run: npm run lint:report
+        # This command generates the linting report in JSON format
 
       - name: Upload linting report
         uses: actions/upload-artifact@v4
         if: always()
+        # Upload the report regardless of the linting result
         with:
           name: lint-report
           path: eslint-report.json
+
+
+  # =========================
+  # DEPLOY JOB
+  # =========================
+  deploy:
+    runs-on: self-hosted
+    needs: [build-job, test-job, lint]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        shell: cmd
+        run: npm ci
+
+      - name: Deploy application
+        shell: cmd
+        run: echo Deploying application...
