@@ -1,7 +1,6 @@
 name: CI Pipeline Demo
-
 on:
-  push:
+  push: # Trigger the workflow on push events to the main branch if you wont to "trigger mannually you can use workflow_dispatch"
     branches: ["main"]
 
 jobs:
@@ -13,7 +12,7 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout code
+      - name: Checkout code #this step checks out the repository so that the workflow can access its contents
         uses: actions/checkout@v4
 
       - name: Setup Node.js
