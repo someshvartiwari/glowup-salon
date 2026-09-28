@@ -131,4 +131,4 @@ jobs:
 
       - name: Deploy application
         shell: cmd
-        run: echo Deploying application.. good luck!
+        run: echo Deploying application.. best of luck!
