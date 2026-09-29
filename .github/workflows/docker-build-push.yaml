@@ -29,8 +29,8 @@ jobs:
           docker build \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:latest .
 
-      # Step 4: Push Docker image to Docker Hub to worlk
-      - name: Push Docker image
+      # Step 4: Push Docker image to Docker Hub to work with the self-hosted runner
+      - name: Push Docker image for self-hosted runner
         run: |
           docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:latest
