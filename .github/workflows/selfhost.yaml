@@ -3,6 +3,8 @@ on:
   push: # Trigger the workflow on push events to the main branch if you wont to "trigger mannually you can use workflow_dispatch"
     branches: ["main"]
 
+  workflow_dispatch:
+
 jobs:
 
   # =========================
