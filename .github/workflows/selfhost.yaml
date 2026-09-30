@@ -1,20 +1,25 @@
 name: CI Pipeline Demo
-on:
-  push: # Trigger the workflow on push events to the main branch if you wont to "trigger mannually you can use workflow_dispatch"
-    branches: ["main"]
 
-#  workflow_dispatch:
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
 
 jobs:
 
   # =========================
   # BUILD JOB
   # =========================
+
   build-job:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code #this step checks out the repository so that the workflow can access its contents
+
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -24,20 +29,10 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        shell: cmd
         run: npm ci
 
       - name: Build project
-        shell: cmd
         run: npm run build
-
-      - name: Move node_modules to dist
-        shell: cmd
-        run: move node_modules dist
-
-      - name: Copy package.json
-        shell: cmd
-        run: copy package.json dist\
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -49,11 +44,14 @@ jobs:
   # =========================
   # TEST JOB
   # =========================
+
   test-job:
     runs-on: ubuntu-latest
+
     needs: build-job
 
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -61,13 +59,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        shell: cmd
         run: npm ci
 
       - name: Run tests
-        shell: cmd
         run: npm test
 
       - name: Upload test coverage
@@ -80,11 +77,14 @@ jobs:
   # =========================
   # LINT JOB
   # =========================
+
   lint:
     runs-on: ubuntu-latest
+
     needs: build-job
 
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -92,45 +92,73 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        shell: cmd
         run: npm ci
 
       - name: Run linting
-        shell: cmd
         run: npm run lint:report
-        # This command generates the linting report in JSON format
 
       - name: Upload linting report
         uses: actions/upload-artifact@v4
         if: always()
-        # Upload the report regardless of the linting result
         with:
           name: lint-report
           path: eslint-report.json
 
 
   # =========================
-  # DEPLOY JOB
+  # DOCKER BUILD & PUSH JOB
   # =========================
-  deploy:
+
+  docker:
     runs-on: ubuntu-latest
-    needs: [build-job, test-job, lint]
+
+    needs:
+      - build-job
+      - test-job
+      - lint
 
     steps:
+
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          node-version: 20
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Install dependencies
-        shell: cmd
-        run: npm ci
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:latest \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:${{ github.ref_name }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:${{ github.sha }} .
+
+      - name: Push Docker images
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:${{ github.ref_name }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:${{ github.sha }}
+
+
+  # =========================
+  # DEPLOY JOB
+  # =========================
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    needs:
+      - docker
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Deploy application
-        shell: cmd
-        run: echo Deploying application.. best of luck!
+        run: echo "Deploying application... Best of luck!"
