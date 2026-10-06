@@ -5,7 +5,7 @@ on:
     branches:
       - main
 
-  workflow_dispatch:
+  #workflow_dispatch:
 
 
 jobs:
@@ -95,7 +95,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci  # this will install the dependencies defined in package.json
 
       - name: Run linting
         run: npm run lint:report
