@@ -11,7 +11,7 @@ on:
 jobs:
 
   # =========================
-  # BUILD JOB for the project
+  # BUILD JOB for the project and this mins 
   # =========================
 
   build-job:
