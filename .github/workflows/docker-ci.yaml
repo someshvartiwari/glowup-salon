@@ -1,16 +1,16 @@
-name: Docker CI
+# name: Docker CI
 
-on:
-  push:
-    branches:
-    - main
-jobs:
-  docker-build:
-    runs-on: self-hosted
+# on:
+#   push:
+#     branches:
+#     - main
+# jobs:
+#   docker-build:
+#     runs-on: self-hosted
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t myapp:latest .
+#       - name: Build Docker image
+#         run: docker build -t myapp:latest .
