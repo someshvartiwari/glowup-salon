@@ -134,9 +134,8 @@ jobs:
       - name: Build Docker image #because this step is necessary to build the Docker image for the application, tagging it with the appropriate version and SHA for later use.
         run: |
           docker build \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:latest \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:${{ github.ref_name }} \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:${{ github.sha }} .
+            -t username/glowup-salon:latest \
+            -t username/glowup-salon:main .
 
       - name: Push Docker images
         run: |
