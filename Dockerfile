@@ -1,14 +1,12 @@
-
-FROM node:22-bookworm
+FROM node:20
 
 WORKDIR /glowup-salon
 
-COPY package*.json ./
+COPY . . 
 
-RUN npm ci
-
-COPY . .
+RUN npm install 
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+CMD ["npm", "start", "--", "--host"]
+
