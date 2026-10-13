@@ -140,4 +140,4 @@ jobs:
 
     steps:
       - name: Deployment status
-        run: echo "Docker image successfully pushed to Docker Hub."
+        run: echo "Docker image successfully pushed to Docker Hub. for deployment, please pull the image from Docker Hub and run it on your server or cloud platform."
