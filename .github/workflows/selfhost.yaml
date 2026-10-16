@@ -42,7 +42,7 @@ jobs:
         run: docker build -t glowup-salon:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scan
-        uses: aquasecurity/trivy-action@0.34.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: image
           image-ref: glowup-salon:${{ github.sha }}
