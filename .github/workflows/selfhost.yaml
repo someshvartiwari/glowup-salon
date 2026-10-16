@@ -7,11 +7,61 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
-  # =========================
-  # BUILD JOB
-  # =========================
+  # 1. SECRET SCANNING
+  gitleaks:
+    name: Run Gitleaks Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 2. BUILD DOCKER IMAGE AND SCAN
+  trivy:
+    name: Trivy Docker Image Scan
+    runs-on: ubuntu-latest
+    needs: gitleaks
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t glowup-salon:${{ github.sha }} .
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.36.0
+        with:
+          scan-type: image
+          image-ref: glowup-salon:${{ github.sha }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          vuln-type: os,library
+          exit-code: '1'
+
+      - name: Upload Trivy results to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: trivy-results.sarif
+
+  # 3. BUILD REACT PROJECT
   build-job:
+    name: Build React App
     runs-on: ubuntu-latest
 
     steps:
@@ -36,10 +86,9 @@ jobs:
           name: build-artifacts
           path: dist/
 
-  # =========================
-  # TEST JOB
-  # =========================
+  # 4. TEST JOB
   test-job:
+    name: Run Tests
     runs-on: ubuntu-latest
     needs: build-job
 
@@ -67,10 +116,9 @@ jobs:
           path: coverage/
           if-no-files-found: ignore
 
-  # =========================
-  # LINT JOB
-  # =========================
+  # 5. LINT JOB
   lint:
+    name: Run ESLint
     runs-on: ubuntu-latest
     needs: build-job
 
@@ -87,7 +135,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Run linting
+      - name: Run lint
         run: npm run lint:report
 
       - name: Upload lint report
@@ -98,12 +146,13 @@ jobs:
           path: eslint-report.json
           if-no-files-found: ignore
 
-  # =========================
-  # DOCKER BUILD & PUSH
-  # =========================
+  # 6. DOCKER BUILD AND PUSH
   docker:
+    name: Push Image to Docker Hub
     runs-on: ubuntu-latest
     needs:
+      - gitleaks
+      - trivy
       - build-job
       - test-job
       - lint
@@ -131,13 +180,12 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:main
             ${{ secrets.DOCKERHUB_USERNAME }}/glowup-salon:${{ github.sha }}
 
-  # =========================
-  # DEPLOY JOB
-  # =========================
+  # 7. PIPELINE STATUS
   deploy:
+    name: Deployment Status
     runs-on: ubuntu-latest
     needs: docker
 
     steps:
       - name: Deployment status
-        run: echo "Docker image successfully pushed to Docker cloud platform."
+        run: echo "Docker image successfully pushed to Docker Hub."
